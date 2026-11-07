@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="dark">
+<title>Hüsrev AI · Cappaventures Özel Sistem Teklifi</title><meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Montserrat;src:url(lib/Montserrat-Light.ttf);font-weight:300}
+@font-face{font-family:Montserrat;src:url(lib/Montserrat-Regular.ttf);font-weight:400}
+@font-face{font-family:Montserrat;src:url(lib/Montserrat-Medium.ttf);font-weight:500}
+@font-face{font-family:Montserrat;src:url(lib/Montserrat-SemiBold.ttf);font-weight:600}
+:root{--bg:#0D0A08;--bg2:#15100C;--text:#F6F1EA;--muted:#BDB3A6;--faint:#7F766B;--line:rgba(255,236,214,.13);--sun:#F2A65A;--terra:#E07A4F;--ok:#8FCB9B;--ease:cubic-bezier(.16,1,.3,1);
+--font:Montserrat,"Yu Gothic","Hiragino Sans","Microsoft YaHei","PingFang SC","Noto Sans JP","Noto Sans SC",system-ui,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{background:var(--bg);color:var(--text);overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased}
+.deck{position:fixed;inset:0}
+.slide{position:absolute;inset:0;display:flex;align-items:center;padding:96px 7vw 112px;opacity:0;pointer-events:none;transition:opacity 1s var(--ease);overflow:hidden}
+.slide.active{opacity:1;pointer-events:auto}.slide.center{justify-content:center;text-align:center}
+.inner{position:relative;z-index:3;width:100%;max-width:1380px;margin:0 auto}
+.bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#000}.bg img{width:100%;height:100%;object-fit:cover;transform:scale(1.14);transition:transform 14s linear}
+.slide.active .bg img{transform:scale(1)}
+.shade{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(13,10,8,.97) 0%,rgba(13,10,8,.84) 40%,rgba(13,10,8,.35) 78%,rgba(13,10,8,.55) 100%)}
+.shade.full{background:radial-gradient(ellipse at center,rgba(13,10,8,.62) 0%,rgba(13,10,8,.5) 50%,rgba(13,10,8,.9) 100%)}.slide.center h1,.slide.center h2{text-shadow:0 2px 40px rgba(0,0,0,.55)}
+.shade.deep{background:linear-gradient(0deg,rgba(13,10,8,.97) 0%,rgba(13,10,8,.88) 50%,rgba(13,10,8,.8) 100%)}
+.grain{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:26px 4vw;pointer-events:none}
+.brand{font-weight:600;font-size:13px;letter-spacing:.42em;text-transform:uppercase}.brand i{font-style:normal;color:var(--sun)}
+.topbar .rev{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.kicker{display:inline-flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--sun);font-weight:500;margin-bottom:22px}
+.kicker:before{content:"";width:34px;height:1px;background:var(--sun)}
+.kicker b{font-weight:600;color:var(--text)}
+h1{font-size:clamp(38px,6.2vw,92px);line-height:1.04;font-weight:300;letter-spacing:-.025em;max-width:14ch}
+h2{font-size:clamp(30px,4.1vw,60px);line-height:1.08;font-weight:300;letter-spacing:-.02em;max-width:17ch;margin-bottom:24px}
+h1 em,h2 em{font-style:normal;font-weight:500;color:var(--sun)}
+.lead{font-size:clamp(16px,1.3vw,20px);color:var(--muted);max-width:58ch;line-height:1.65;font-weight:400}
+.stats{display:flex;flex-wrap:wrap;gap:0;margin-top:40px;border-top:1px solid var(--line)}
+.stat{padding:20px 40px 0 0;margin-right:40px;min-width:150px}
+.stat b{display:block;font-size:clamp(30px,3vw,48px);font-weight:300;letter-spacing:-.02em;color:var(--text)}.stat b i.n{font-style:normal}.stat b small{font-size:.5em;color:var(--sun);font-weight:500;margin-left:4px}
+.stat>span{display:block;margin-top:6px;font-size:11px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase}
+.list{list-style:none;margin-top:26px;display:grid;gap:16px;max-width:620px}
+.list li{display:grid;grid-template-columns:22px 1fr;gap:14px;font-size:clamp(15px,1.15vw,18px);line-height:1.55;color:var(--text)}
+.list li:before{content:"";width:22px;height:1px;background:var(--sun);margin-top:13px}
+.list li span{display:block;color:var(--muted);font-size:.9em;margin-top:2px}
+.two{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center}
+[data-r]{opacity:0;transform:translateY(26px);transition:opacity 1s var(--ease),transform 1s var(--ease)}[data-r].in{opacity:1;transform:none}
+
+/* sistem akışı */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:46px;position:relative}
+.flow .rail{position:absolute;left:0;right:0;top:27px;height:1px;background:var(--line)}
+.flow .rail i{position:absolute;inset:0;background:linear-gradient(90deg,var(--sun),var(--terra));transform-origin:left;transform:scaleX(0);transition:transform 2.6s var(--ease)}
+.flow.in .rail i{transform:scaleX(1)}
+.node{position:relative;padding-right:28px}
+.node .dot{width:55px;height:55px;border:1px solid var(--sun);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:.1em;color:var(--sun);font-weight:500;margin-bottom:22px}
+.node h3{font-size:clamp(18px,1.5vw,24px);font-weight:500;margin-bottom:8px}.node p{font-size:14px;color:var(--muted);line-height:1.55;max-width:26ch}
+.node.core .dot{background:var(--sun);color:#1a120b}
+.outcome{margin-top:44px;display:flex;align-items:center;gap:18px;font-size:clamp(15px,1.2vw,18px);color:var(--muted)}
+.outcome b{color:var(--text);font-weight:500}.outcome:before{content:"";width:60px;height:1px;background:var(--terra)}
+
+/* tarayıcı maketi */
+.browser{background:#0a0807;border:1px solid var(--line);box-shadow:0 40px 90px rgba(0,0,0,.65)}
+.browser .bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);background:#161210}
+.browser .bar i{width:9px;height:9px;border-radius:50%;background:#3a322b}.browser .bar span{margin-left:12px;font-size:11px;color:var(--faint);letter-spacing:.06em}
+.site{position:relative;aspect-ratio:16/10;overflow:hidden}
+.site img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.site:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,8,6,.85),rgba(10,8,6,.15) 70%)}
+.site .nav{position:absolute;z-index:2;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+.site .langs{display:flex;gap:14px;letter-spacing:.1em}.site .langs b{font-weight:400;color:var(--muted);padding-bottom:3px;border-bottom:1px solid transparent;transition:all .5s}.site .langs b.on{color:var(--text);border-color:var(--sun)}
+.site .hero{position:absolute;z-index:2;left:18px;bottom:18%;right:30%}
+.site .hero .t{position:relative;height:3.4em;font-size:clamp(15px,1.7vw,26px);font-weight:300;line-height:1.25}
+.site .hero .t span{position:absolute;left:0;top:0;opacity:0;transform:translateY(10px);transition:all .8s var(--ease)}.site .hero .t span.on{opacity:1;transform:none}
+.site .cta{display:inline-block;margin-top:12px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;padding-bottom:4px;border-bottom:1px solid var(--sun);position:relative;height:16px;min-width:140px}
+.site .cta span{position:absolute;left:0;top:0;opacity:0;transition:opacity .6s}.site .cta span.on{opacity:1}
+.site .badge{position:absolute;z-index:2;right:16px;bottom:14px;font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;border-left:1px solid var(--sun);padding-left:8px}
+
+/* telefon maketi */
+.phone{width:min(330px,80vw);margin:0 auto;border:1px solid rgba(255,236,214,.22);border-radius:40px;padding:12px;background:#070605;box-shadow:0 40px 90px rgba(0,0,0,.7)}
+.screen{border-radius:30px;overflow:hidden;background:#0f0d0c;height:560px;position:relative;display:flex;flex-direction:column}
+.ig-head{display:flex;align-items:center;gap:14px;padding:18px 16px 12px}
+.ig-av{width:62px;height:62px;border-radius:50%;padding:2px;background:linear-gradient(45deg,#F2A65A,#E07A4F,#c2477e);flex:none}.ig-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #0f0d0c;display:block}
+.ig-head h4{font-size:14px;font-weight:600}.ig-head p{font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px}
+.ig-link{margin:0 16px 12px;font-size:11px;color:#9fc4ff;letter-spacing:.02em}
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.ig-grid img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.chat-top{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.chat-top .ig-av{width:34px;height:34px}.chat-top b{font-size:13px;font-weight:600}.chat-top small{display:block;font-size:10px;color:var(--ok)}
+.msgs{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.msg{max-width:82%;padding:10px 13px;font-size:13px;line-height:1.45;border-radius:18px}
+.msg em{display:block;font-style:normal;font-size:10.5px;color:rgba(255,255,255,.55);margin-top:5px;line-height:1.35}
+.msg.in-m{align-self:flex-start;background:#262220;border-bottom-left-radius:5px}
+.msg.out-m{align-self:flex-end;background:linear-gradient(135deg,#d9733f,#b8516f);border-bottom-right-radius:5px}
+.msg.out-m em{color:rgba(255,255,255,.75)}
+.typing{align-self:flex-end;display:flex;gap:4px;padding:12px 14px;background:#2b2522;border-radius:18px;max-height:0;opacity:0;overflow:hidden}
+.typing.in{animation:typ 1.3s forwards}.typing i{width:6px;height:6px;border-radius:50%;background:#bbb;animation:bl 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typ{0%{max-height:0;opacity:0;padding:0 14px}12%{max-height:40px;opacity:1;padding:12px 14px}80%{max-height:40px;opacity:1;padding:12px 14px}100%{max-height:0;opacity:0;padding:0 14px;margin-top:-10px}}
+@keyframes bl{0%,100%{opacity:.3}50%{opacity:1}}
+.tagline{text-align:center;margin-top:16px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+/* satış beyni */
+.pipe{display:grid;gap:0;border-left:1px solid var(--line);margin-left:6px}
+.step{position:relative;padding:0 0 22px 34px}
+.step:before{content:"";position:absolute;left:-6px;top:4px;width:11px;height:11px;background:var(--bg);border:1px solid var(--sun);transition:background .6s}
+.step.in:before{background:var(--sun);box-shadow:0 0 18px rgba(242,166,90,.7)}
+.step small{font-size:11px;letter-spacing:.22em;color:var(--sun);text-transform:uppercase}
+.step h3{font-size:clamp(17px,1.35vw,21px);font-weight:500;margin:4px 0 3px}.step p{font-size:14px;color:var(--muted);line-height:1.5}
+.check{margin-top:26px;border-top:1px solid var(--sun);background:linear-gradient(180deg,rgba(242,166,90,.09),rgba(242,166,90,0));padding:18px 20px}
+.check .h{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.check .row{display:flex;justify-content:space-between;gap:16px;font-size:14px;padding:7px 0;border-bottom:1px solid var(--line)}.check .row:last-child{border:none}
+.check .row b{font-weight:500;color:var(--ok)}.check .row b.no{color:var(--terra)}
+
+/* panel maketi */
+.dash{background:#0b0908;border:1px solid var(--line);box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.dash .dh{display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.dash .kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.dash .kpis div{padding:16px 18px;border-right:1px solid var(--line)}.dash .kpis div:last-child{border:none}
+.dash .kpis b{display:block;font-size:26px;font-weight:300}.dash .kpis span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.dash table{width:100%;border-collapse:collapse;font-size:12.5px}.dash th{text-align:left;font-weight:500;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);padding:10px 18px;border-bottom:1px solid var(--line)}
+.dash td{padding:11px 18px;border-bottom:1px solid rgba(255,236,214,.06);color:var(--text)}.dash td.m{color:var(--muted)}
+.st{font-size:10px;letter-spacing:.14em;text-transform:uppercase}.st.ok{color:var(--ok)}.st.w{color:var(--sun)}
+.note{margin-top:10px;font-size:11px;color:var(--faint);letter-spacing:.08em}
+
+/* yol haritası */
+.road{display:grid;grid-template-columns:repeat(5,1fr);margin-top:44px;border-top:1px solid var(--line)}
+.road>div{padding:24px 24px 0 0;position:relative}
+.road>div:before{content:"";position:absolute;top:-4px;left:0;width:7px;height:7px;background:var(--sun)}
+.road small{font-size:11px;letter-spacing:.22em;color:var(--sun)}.road h3{font-size:clamp(17px,1.35vw,21px);font-weight:500;margin:8px 0}.road p{font-size:14px;color:var(--muted);line-height:1.55}
+.need{display:grid;grid-template-columns:1fr 1fr;gap:0 48px;margin-top:30px;max-width:1100px}
+.need>div{display:grid;grid-template-columns:44px 1fr;padding:18px 0;border-bottom:1px solid var(--line);font-size:clamp(15px,1.15vw,18px);line-height:1.5}
+.need>div>small{color:var(--sun);font-size:12px;letter-spacing:.14em;padding-top:4px}.need>div span{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+
+/* hüsrev ai marka */
+.brand{display:flex;align-items:center;gap:12px}.brand .hav{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--sun)}
+.brand .x{color:var(--faint);font-weight:300;letter-spacing:0}.brand .hai{color:var(--text)}
+.ozel{position:fixed;right:4vw;bottom:84px;z-index:50;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);pointer-events:none}.ozel b{color:var(--sun);font-weight:500}
+.stamp{display:inline-flex;flex-wrap:wrap;gap:6px 16px;margin-top:30px;padding:12px 18px;border:1px solid rgba(242,166,90,.55);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sun)}.stamp span{color:var(--muted)}
+.portre{position:relative;max-width:460px;margin-left:auto}.portre img{width:100%;display:block;filter:saturate(.9) contrast(1.04)}
+.portre:before{content:"";position:absolute;inset:-14px 14px 14px -14px;border:1px solid rgba(242,166,90,.5);z-index:-1}
+.portre .cap{position:absolute;left:0;right:0;bottom:0;padding:44px 20px 16px;background:linear-gradient(0deg,rgba(13,10,8,.92),rgba(13,10,8,0));font-size:12px;letter-spacing:.26em;text-transform:uppercase}.portre .cap b{display:block;font-size:20px;letter-spacing:.12em;font-weight:500;margin-bottom:4px}
+.imza{display:inline-flex;align-items:center;gap:16px;margin-top:34px;text-align:left}.imza img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--sun)}
+.imza b{display:block;font-size:15px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}.imza span{font-size:12px;color:var(--muted);letter-spacing:.06em}
+/* arayüz */
+.ui{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;gap:24px;padding:20px 4vw}
+#progress{display:flex;gap:6px;flex:1}.seg{flex:1;height:2px;background:rgba(255,255,255,.14);cursor:pointer;overflow:hidden;position:relative}.seg:after{content:"";position:absolute;left:0;right:0;top:-8px;bottom:-8px}
+.seg i{display:block;height:100%;width:0;background:var(--sun);transition:width .6s var(--ease)}.seg.done i,.seg.cur i{width:100%}
+.nav{display:flex;gap:10px;align-items:center}.nav button{width:50px;height:50px;border:1px solid rgba(255,236,214,.3);background:rgba(13,10,8,.5);color:var(--text);cursor:pointer;font-size:24px;font-weight:300;font-family:inherit;transition:border-color .3s,color .3s}
+.nav button:hover{border-color:var(--sun);color:var(--sun)}.nav button:disabled{opacity:.25;cursor:default}
+#counter{font-size:11px;color:var(--muted);letter-spacing:.2em;min-width:60px;text-align:center}
+.yan{position:fixed;top:50%;transform:translateY(-50%);z-index:50;width:52px;height:110px;border:none;background:transparent;color:rgba(255,236,214,.55);font-size:46px;font-weight:300;cursor:pointer;font-family:inherit}.yan:hover{color:var(--sun)}.yan.sol{left:4px}.yan.sag{right:4px}
+.hint{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:50;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);animation:hint 2.4s infinite}@keyframes hint{0%,100%{opacity:.35}50%{opacity:1}}
+.sun-glow{position:absolute;width:70vw;height:70vw;border-radius:50%;background:radial-gradient(circle,rgba(242,166,90,.22),transparent 62%);z-index:1;pointer-events:none}
+.sig{margin-top:36px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint)}
+.clock{display:flex;flex-wrap:wrap;gap:0;margin-top:38px;border-top:1px solid var(--line)}
+.clock div{padding:22px 48px 0 0}.clock b{display:block;font-size:clamp(34px,3.6vw,58px);font-weight:300;letter-spacing:-.02em}.clock b small{font-size:.38em;color:var(--muted);margin-left:8px;letter-spacing:.1em;font-weight:400}
+.clock span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}.clock .ks b{color:var(--sun)}
+
+@media (max-width:900px){
+ .slide{padding:84px 6vw 120px;align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+ .two{grid-template-columns:1fr;gap:34px}.flow{grid-template-columns:1fr 1fr;gap:28px 0}.flow .rail{display:none}
+ .road{grid-template-columns:1fr 1fr;gap:0 0}.need{grid-template-columns:1fr}
+ .shade{background:linear-gradient(0deg,rgba(13,10,8,.97) 0%,rgba(13,10,8,.86) 60%,rgba(13,10,8,.62) 100%)}
+ .yan{display:none}.ozel{display:none}.brand{gap:8px;font-size:11px;letter-spacing:.26em}.brand .hav{width:28px;height:28px}.portre{margin:0 auto;max-width:300px}.topbar{padding:20px 6vw}.topbar .rev{display:none}.stat{padding-right:20px;margin-right:20px}
+ .screen{height:500px}.dash .kpis b{font-size:20px}.dash th:nth-child(4),.dash td:nth-child(4){display:none}.dash td,.dash th{padding:10px 10px}
+ .ui{padding:14px 6vw;background:linear-gradient(0deg,rgba(13,10,8,.95),rgba(13,10,8,0))}.nav button{width:44px;height:44px}
+}
+</style></head><body>
+<div class="grain"></div>
+<div class="topbar"><div class="brand"><img class="hav" src="img/husrev_yuz.jpg" alt="Hüsrev AI"><span class="hai">Hüsrev AI</span><span class="x">×</span><span>Cappa<i>ventures</i></span></div><span class="rev">Özel sistem teklifi · Yalnızca Cappaventures için</span></div>
+<div class="deck" id="deck">
+
+<!-- 1 KAPAK -->
+<section class="slide center">
+  <div class="bg"><img src="img/gokkusagi_balon.jpg" alt=""></div><div class="shade full"></div><div class="sun-glow" style="left:15vw;top:-20vw"></div>
+  <div class="inner">
+    <div class="kicker" data-r style="justify-content:center">Hüsrev AI · Özel sistem teklifi</div>
+    <h1 data-r style="margin:0 auto">Kapadokya'yı dünyaya <em>kendi dilinde</em> satan sistem.</h1>
+    <p class="lead" data-r data-step="1" style="margin:28px auto 0">Web sitesi, Instagram ve yapay zekâ destekli satış asistanı. Dört parça, tek sistem: İngilizce, Çince ve Japonca, yedi gün yirmi dört saat.</p>
+    <div class="stamp" data-r data-step="1"><b style="font-weight:500">Yalnızca Cappaventures için hazırlandı</b><span>Teklif no HAI-2026-003 · Geçerlilik 10 Kasım 02:30</span></div>
+  </div>
+</section>
+
+<!-- 2 HAZIRLAYAN -->
+<section class="slide">
+  <div class="bg"><img src="img/kar_balon.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner two"><div><div class="kicker" data-r>Hazırlayan</div>
+    <h2 data-r>Bu sistem <em>yalnızca sizin için</em> tasarlandı.</h2>
+    <p class="lead" data-r data-step="0">Hüsrev AI, işletmelere yapay zekâ ile çalışan satış sistemleri kurar. Hazır paket satmaz. Her teklif, işletmenin ürünleri, misafirleri ve hedef pazarı incelenerek sıfırdan hazırlanır.</p>
+    <ul class="list"><li data-r data-step="1"><div>Seçilmiş işletmelerle çalışırız <span>Her dönem sınırlı sayıda projeye başlarız; her işe birebir ilgi.</span></div></li>
+      <li data-r data-step="1"><div>Size özel kurgu <span>Bu sunumdaki her ekran Cappaventures'ın turları ve pazarları düşünülerek çizildi.</span></div></li>
+      <li data-r data-step="1"><div>Instagram'da 35 bin+ takipçi <span>Yapay zekâyı işletmelere anlatan Hüsrev AI topluluğu.</span></div></li></ul></div>
+    <div data-r data-step="0"><div class="portre"><img src="img/husrev.jpg" alt="Hüsrev AI"><div class="cap"><b>Hüsrev AI</b>Yapay zekâ satış sistemleri</div></div></div>
+  </div>
+</section>
+
+<!-- 2 BUGÜN -->
+<section class="slide">
+  <div class="bg"><img src="img/balon_yol.jpg" alt=""></div><div class="shade"></div>
+  <div class="inner"><div class="kicker" data-r>Bugünkü durum</div>
+    <h2 data-r>Ürün <em>güçlü.</em> Vitrin ise herkesle aynı.</h2>
+    <div class="stats" data-r data-step="0"><div class="stat"><b><i class="n" data-count="40">0</i><small>+</small></b><span>tur ve aktivite</span></div><div class="stat"><b><i class="n" data-count="10">0</i><small>+ yıl</small></b><span>saha deneyimi</span></div><div class="stat"><b>17102</b><span>TÜRSAB belge no</span></div></div>
+    <ul class="list"><li data-r data-step="1"><div>Hazır şablon altyapı <span>yüzlerce acenteyle aynı görünüm, markaya ait bir kimlik yok.</span></div></li>
+      <li data-r data-step="1"><div>Otomatik çeviri <span>Japon ve Çinli misafir, kendi dilinde özenli bir metin görmeyince güvenmez.</span></div></li>
+      <li data-r data-step="1"><div>Satış elle kapanıyor <span>her soru WhatsApp'ta tek tek cevaplanıyor; ekip uyurken talep bekliyor.</span></div></li></ul>
+  </div>
+</section>
+
+<!-- 3 SAAT FARKI -->
+<section class="slide">
+  <div class="bg"><img src="img/kar_balon.jpg" alt=""></div><div class="shade"></div>
+  <div class="inner"><div class="kicker" data-r>Kaçan müşteri</div>
+    <h2 data-r>Misafir güne başlarken <em>Kapadokya uyuyor.</em></h2>
+    <div class="clock" data-r data-step="0"><div><b>09:00<small>Tokyo</small></b><span>misafir yazıyor</span></div><div><b>09:00<small>Pekin</small></b><span>misafir yazıyor</span></div><div class="ks"><b>03:00–04:00<small>Kapadokya</small></b><span>ekip uykuda</span></div></div>
+    <p class="lead" data-r data-step="1" style="margin-top:30px">Japonya ile 6, Çin ile 5 saat fark var. Sabah sorusu sabaha kalırsa misafir başka acenteden alır. Sistem bu saatlerde de misafirin kendi dilinde, saniyeler içinde cevap verir.</p>
+  </div>
+</section>
+
+<!-- 4 SİSTEM -->
+<section class="slide">
+  <div class="bg"><img src="img/green_genis.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner"><div class="kicker" data-r>Hüsrev AI sistemi · bir bakışta</div>
+    <h2 data-r style="max-width:22ch">Dört parça, <em>tek amaç:</em> rezervasyon.</h2>
+    <div class="flow" data-r data-step="0" id="flow"><div class="rail"><i></i></div>
+      <div class="node"><div class="dot">01</div><h3>Web sitesi</h3><p>Üç dilde, markaya özel vitrin. Her tur için ayrı sayfa.</p></div>
+      <div class="node"><div class="dot">02</div><h3>Instagram köprüsü</h3><p>Site ile Instagram birbirine bağlı; misafir kaybolmaz.</p></div>
+      <div class="node"><div class="dot">03</div><h3>Otomatik DM</h3><p>Gelen her mesaja, misafirin dilinde ilk cevap anında.</p></div>
+      <div class="node core"><div class="dot">04</div><h3>Satış beyni</h3><p>Anlık müsaitliği kontrol eder, teklif verir, rezervasyonu alır.</p></div>
+    </div>
+    <div class="outcome" data-r data-step="1"><div><b>Sonuç:</b> talep nereden gelirse gelsin, ekibinize hazır bir rezervasyon olarak düşer.</div></div>
+  </div>
+</section>
+
+<!-- 5 WEB SİTESİ -->
+<section class="slide">
+  <div class="bg"><img src="img/magara.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner two"><div><div class="kicker" data-r><b>01</b> Web sitesi</div>
+    <h2 data-r>Şablon değil, <em>size özel</em> bir vitrin.</h2>
+    <ul class="list"><li data-r data-step="0"><div>Sinematik giriş <span>açılışta Kapadokya'nın gün doğumu; ilk saniyede güven.</span></div></li>
+      <li data-r data-step="0"><div>İngilizce · 中文 · 日本語 <span>makine çevirisi değil, her dile özel düzenlenmiş metin.</span></div></li>
+      <li data-r data-step="1"><div>Her tura ayrı sayfa <span>Google'da üç dilde ayrı ayrı bulunur.</span></div></li>
+      <li data-r data-step="1"><div>Telefonda hızlı ve kusursuz <span>TÜRSAB rozeti, gerçek yorumlar, tek dokunuşla rezervasyon.</span></div></li></ul></div>
+    <div class="browser" data-r data-step="0" id="langdemo"><div class="bar"><i></i><i></i><i></i><span>cappaventures · ana sayfa</span></div>
+      <div class="site"><img src="img/klasik_pembe.jpg" alt="">
+        <div class="nav"><span>Cappaventures</span><div class="langs"><b class="on">EN</b><b>中文</b><b>日本語</b></div></div>
+        <div class="hero"><div class="t"><span class="on">See Cappadocia<br>from the sky at sunrise.</span><span>日出时分，<br>从空中俯瞰卡帕多奇亚。</span><span>日の出のカッパドキアを、<br>空から。</span></div>
+          <div class="cta"><span class="on">Book your flight</span><span>立即预订</span><span>今すぐ予約</span></div></div>
+        <div class="badge">TÜRSAB 17102</div></div></div>
+  </div>
+</section>
+
+<!-- 6 INSTAGRAM KÖPRÜSÜ -->
+<section class="slide">
+  <div class="bg"><img src="img/jeep3.jpg" alt=""></div><div class="shade"></div>
+  <div class="inner two"><div><div class="kicker" data-r><b>02</b> Instagram köprüsü</div>
+    <h2 data-r>Site ve Instagram <em>tek vitrin.</em></h2>
+    <ul class="list"><li data-r data-step="0"><div>Instagram'dan siteye <span>profil bağlantısı, misafirin diline göre doğru sayfayı açar.</span></div></li>
+      <li data-r data-step="0"><div>Siteden Instagram'a <span>her turda gerçek misafir paylaşımları; güven, satıştan önce gelir.</span></div></li>
+      <li data-r data-step="1"><div>Reels ve hikâyeden rezervasyona <span>paylaşımdaki tur, tek dokunuşla kendi sayfasına gider.</span></div></li></ul></div>
+    <div data-r data-step="0"><div class="phone"><div class="screen">
+      <div class="ig-head"><div class="ig-av"><img src="img/avatar.jpg" alt=""></div><div><h4>cappaventures</h4><p>Cappadocia · Balloon & Tours<br>EN · 中文 · 日本語 · TÜRSAB 17102</p></div></div>
+      <div class="ig-link">🔗 cappaventures · rezervasyon</div>
+      <div class="ig-grid"><img src="img/g_gokkusagi.jpg" alt=""><img src="img/jeep.jpg" alt=""><img src="img/g_klasik.jpg" alt=""><img src="img/g_sisli.jpg" alt=""><img src="img/kar_balon.jpg" alt=""><img src="img/at.jpg" alt=""><img src="img/klasik_pembe.jpg" alt=""><img src="img/turk_gecesi.jpg" alt=""><img src="img/g_yol.jpg" alt=""><img src="img/soganli.jpg" alt=""><img src="img/g_klasik2.jpg" alt=""><img src="img/magara.jpg" alt=""></div>
+    </div></div></div>
+  </div>
+</section>
+
+<!-- 7 OTOMATİK DM -->
+<section class="slide">
+  <div class="bg"><img src="img/jeep2.jpg" alt=""></div><div class="shade"></div>
+  <div class="inner two"><div><div class="kicker" data-r><b>03</b> Otomatik DM</div>
+    <h2 data-r>Mesaj gece gelir, <em>cevap saniyede</em> gider.</h2>
+    <ul class="list"><li data-r data-step="0"><div>Misafir hangi dilde yazarsa <span>o dilde, doğal ve kibar bir cevap.</span></div></li>
+      <li data-r data-step="0"><div>Yorumdan mesaja <span>gönderiye "BALLOON" yazan, tur ve tarih bilgisini DM'den alır.</span></div></li>
+      <li data-r data-step="1"><div>Gerektiğinde ekibe devreder <span>özel bir istekte konuşma ekibe geçer, ekip kaldığı yerden devam eder.</span></div></li></ul></div>
+    <div data-r data-step="0"><div class="phone"><div class="screen">
+      <div class="chat-top"><div class="ig-av"><img src="img/avatar.jpg" alt=""></div><div><b>cappaventures</b><small>● çevrimiçi</small></div></div>
+      <div class="msgs">
+        <div class="msg in-m" data-r data-d="500">来週、気球ツアーは2名空いていますか？<em>Gelecek hafta balon turunda 2 kişilik yer var mı?</em></div>
+        <div class="typing" data-r data-d="1500"><i></i><i></i><i></i></div>
+        <div class="msg out-m" data-r data-d="2900">はい！11月14日の早朝に2名分の空きがございます。ホテル送迎付きです。ご予約しますか？<em>Evet! 14 Kasım sabahı 2 kişilik yer var, otel transferi dahil. Rezervasyon yapalım mı?</em></div>
+        <div class="msg in-m" data-r data-d="4600">はい、お願いします！<em>Evet, lütfen!</em></div>
+        <div class="typing" data-r data-d="5300"><i></i><i></i><i></i></div>
+        <div class="msg out-m" data-r data-d="6700">ご予約を承りました ✓ 確認の詳細をWhatsAppでお送りします。<em>Rezervasyonunuz alındı ✓ Onay detaylarını WhatsApp'tan gönderiyoruz.</em></div>
+      </div></div></div><div class="tagline">Örnek konuşma · Japonca</div></div>
+  </div>
+</section>
+
+<!-- 8 SATIŞ BEYNİ -->
+<section class="slide">
+  <div class="bg"><img src="img/balon_kar2.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner two"><div><div class="kicker" data-r><b>04</b> Hüsrev AI satış beyni</div>
+    <h2 data-r>Asıl güç: <em>anlık müsaitliği</em> bilen beyin.</h2>
+    <p class="lead" data-r data-step="0">Beyin cevap vermeden önce kontrol eder: o tarihte otelde boş oda var mı, balonda ve turda kaç yer kaldı. Olmayanı satmaz; gün doluysa en yakın uygun tarihi önerir.</p>
+    <div class="check" data-r data-step="1"><div class="h">Örnek kontrol · 14 Kasım · 2 kişi</div>
+      <div class="row"><span>Otel · boş oda</span><b>3 oda ✓</b></div><div class="row"><span>Balon · sabah uçuşu</span><b>2 yer ✓</b></div><div class="row"><span>Green Tour · aynı gün</span><b>uygun ✓</b></div><div class="row"><span>Balon · 15 Kasım</span><b class="no">dolu · alternatif önerilir</b></div></div></div>
+    <div class="pipe">
+      <div class="step" data-r data-d="300"><small>Adım 1</small><h3>Talep gelir</h3><p>Site, Instagram ya da WhatsApp; hangi dilde olursa olsun.</p></div>
+      <div class="step" data-r data-d="900"><small>Adım 2</small><h3>Anlar</h3><p>Tarih, kişi sayısı, istenen tur ve bütçe.</p></div>
+      <div class="step" data-r data-d="1500"><small>Adım 3</small><h3>Kontrol eder</h3><p>Otel odası, balon ve tur kontenjanı, transfer. Anlık.</p></div>
+      <div class="step" data-r data-d="2100"><small>Adım 4</small><h3>Teklif verir</h3><p>Doğru tur, doğru tarih; gerekirse alternatifiyle.</p></div>
+      <div class="step" data-r data-d="2700"><small>Adım 5</small><h3>Rezervasyonu kaydeder</h3><p>Misafire onay, ekibinize anında bildirim.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 EKİP PANELİ -->
+<section class="slide">
+  <div class="bg"><img src="img/klasik_kirmizi.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner two"><div><div class="kicker" data-r>Ekip paneli</div>
+    <h2 data-r>Ekibiniz her şeyi <em>tek ekranda</em> görür.</h2>
+    <ul class="list"><li data-r data-step="0"><div>Gelen her talep <span>hangi kanaldan, hangi dilde, hangi tur için.</span></div></li>
+      <li data-r data-step="0"><div>Onay bekleyenler <span>insan kararı gereken talepler ayrı listede.</span></div></li>
+      <li data-r data-step="1"><div>Sabah özeti <span>gece gelen talepler ve rezervasyonlar telefonunuza tek mesajla gelir.</span></div></li></ul></div>
+    <div data-r data-step="0"><div class="dash"><div class="dh"><span>Rezervasyon paneli</span><span>Bugün</span></div>
+      <div class="kpis"><div><b>Yeni</b><span>gece gelen talepler</span></div><div><b>Onaylı</b><span>rezervasyonlar</span></div><div><b>Bekleyen</b><span>ekip kararı</span></div></div>
+      <table><tr><th>Misafir</th><th>Kanal</th><th>Dil</th><th>Tur</th><th>Durum</th></tr>
+        <tr><td>K. Sato</td><td class="m">Instagram</td><td class="m">日本語</td><td class="m">Balon · konfor</td><td><span class="st ok">Onaylandı</span></td></tr>
+        <tr><td>W. Li</td><td class="m">Web sitesi</td><td class="m">中文</td><td class="m">Green Tour</td><td><span class="st ok">Onaylandı</span></td></tr>
+        <tr><td>E. Brown</td><td class="m">WhatsApp</td><td class="m">EN</td><td class="m">2 gece paket</td><td><span class="st w">Ekipte</span></td></tr>
+        <tr><td>Y. Tanaka</td><td class="m">Instagram</td><td class="m">日本語</td><td class="m">Fotoğraf çekimi</td><td><span class="st ok">Onaylandı</span></td></tr></table></div>
+      <div class="note">Örnek ekran · görünüm temsilîdir</div></div>
+  </div>
+</section>
+
+<!-- 10 YOL HARİTASI -->
+<section class="slide">
+  <div class="bg"><img src="img/vadi_kizil.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner"><div class="kicker" data-r>Yol haritası</div>
+    <h2 data-r style="max-width:22ch">Adım adım, <em>her aşama onayınızla.</em></h2>
+    <div class="road">
+      <div data-r data-d="200"><small>01</small><h3>Keşif</h3><p>Turlar, oteller, satış mantığı ve markanın ses tonu netleşir.</p></div>
+      <div data-r data-d="500"><small>02</small><h3>Web sitesi</h3><p>Tasarım, üç dil, tur sayfaları ve rezervasyon akışı.</p></div>
+      <div data-r data-d="800"><small>03</small><h3>Instagram + DM</h3><p>Profil bağlantısı, yorum tetikleri ve otomatik cevaplar.</p></div>
+      <div data-r data-d="1100"><small>04</small><h3>Satış beyni</h3><p>Müsaitlik bağlantısı, teklif ve rezervasyon kaydı, ekip paneli.</p></div>
+      <div data-r data-d="1400"><small>05</small><h3>Test ve yayın</h3><p>Gerçek mesajlarla deneme, ekibe kısa eğitim, canlıya geçiş.</p></div>
+    </div>
+    <p class="lead" data-r data-step="1" style="margin-top:34px">Kurulumun tamamını Hüsrev AI ekibi üstlenir. Bir aşama bitip onaylanmadan diğerine geçilmez; her aşamanın sonunda çalışan bir parça teslim edilir.</p>
+  </div>
+</section>
+
+<!-- 11 SİZDEN GEREKENLER -->
+<section class="slide">
+  <div class="bg"><img src="img/magara_otel.jpg" alt=""></div><div class="shade deep"></div>
+  <div class="inner"><div class="kicker" data-r>Başlangıç</div>
+    <h2 data-r style="max-width:22ch">Başlamak için <em>sizden</em> gerekenler.</h2>
+    <p class="lead" data-r>Teknik işin hepsi Hüsrev AI ekibinde. Sizden yalnızca şunlar gerekir:</p>
+    <div class="need">
+      <div data-r data-d="200"><small>01</small><div>Tur ve aktivite listesi<span>Güncel fiyatlar, kontenjanlar, sezon bilgisi.</span></div></div>
+      <div data-r data-d="350"><small>02</small><div>Orijinal fotoğraf ve videolar<span>Yüksek çözünürlüklü, kırpılmamış halleri.</span></div></div>
+      <div data-r data-d="500"><small>03</small><div>Otelin rezervasyon programı<span>Adı ve erişim izni; anlık müsaitlik buradan okunur.</span></div></div>
+      <div data-r data-d="650"><small>04</small><div>Instagram işletme hesabı<span>Facebook sayfasına bağlı olması yeterli.</span></div></div>
+      <div data-r data-d="800"><small>05</small><div>Alan adı ve TÜRSAB bilgileri<span>Sitenin yasal kimliği ve güven rozeti için.</span></div></div>
+      <div data-r data-d="950"><small>06</small><div>Bir yetkili kişi<span>Aşama onayları ve ekibe devredilen konuşmalar için.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 KAPANIŞ -->
+<section class="slide center">
+  <div class="bg"><img src="img/kapak_safak.jpg" alt=""></div><div class="shade full"></div><div class="sun-glow" style="right:10vw;top:-25vw"></div>
+  <div class="inner"><div class="kicker" data-r style="justify-content:center">Sonraki adım</div>
+    <h2 data-r style="margin:0 auto 22px;max-width:20ch">Manzara hazır. Şimdi sıra <em>satış sisteminde.</em></h2>
+    <p class="lead" data-r data-step="0" style="margin:0 auto">Web sitesi, Instagram, otomatik DM ve satış beyni. Tek sistem, üç dil, yedi gün yirmi dört saat.</p>
+    <div class="imza" data-r data-step="0"><img src="img/husrev_yuz.jpg" alt="Hüsrev AI"><div><b>Hüsrev AI</b><span>Yapay zekâ satış sistemleri · Kasım 2026</span></div></div>
+    <p data-r data-step="1" style="margin-top:26px;font-size:12px;letter-spacing:.14em;color:var(--muted)">Bu teklif Cappaventures yönetimine özel hazırlanmıştır. İçeriği üçüncü kişilerle paylaşılmaz.</p></div>
+</section>
+
+</div>
+<div class="ozel"><b>Hüsrev AI</b> · Gizli ve kişiye özel teklif · 48 saat geçerli</div>
+<div class="hint" id="hint">kaydır · ok tuşları · dokun</div>
+<div class="ui"><div class="nav"><button id="prev" aria-label="Önceki">‹</button><span id="counter">1 / 12</span><button id="next" aria-label="Sonraki">›</button></div><div id="progress"></div></div>
+<button class="yan sol" id="prev2" aria-label="Önceki">‹</button><button class="yan sag" id="next2" aria-label="Sonraki">›</button>
+<script>
+(function(){if(Date.now()>Date.parse('2026-11-10T02:30:00+03:00')){document.body.innerHTML='<div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:18px"><img src="img/husrev_yuz.jpg" alt="" style="width:72px;height:72px;border-radius:50%;border:1px solid #F2A65A"><div style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#F2A65A">Hüsrev AI</div><div style="font-size:26px;font-weight:300;max-width:22ch">Bu özel teklifin süresi doldu.</div><div style="font-size:14px;color:#BDB3A6">Yeni bir görüşme için Hüsrev AI ile iletişime geçin.</div></div>';throw 0;}})();
+(function(){try{
+const deck=document.getElementById('deck');const slides=Array.from(deck.querySelectorAll('.slide'));const progress=document.getElementById('progress');const counter=document.getElementById('counter');const prevBtn=document.getElementById('prev');const nextBtn=document.getElementById('next');const N=slides.length;
+let cur=0,beat=0,maxBeat=0,timers=[],langT=null;const clearT=()=>{timers.forEach(clearTimeout);timers=[];if(langT){clearInterval(langT);langT=null;}};
+slides.forEach((_,i)=>{const s=document.createElement('div');s.className='seg';s.innerHTML='<i></i>';s.addEventListener('click',()=>show(i));progress.appendChild(s);});const segs=Array.from(progress.children);
+const ease=t=>1-Math.pow(1-t,3);
+function countUp(el){if(el.dataset.done==='1')return;el.dataset.done='1';const target=+el.dataset.count,dur=1500,start=performance.now();(function f(now){const t=Math.min(1,(now-start)/dur);el.textContent=Math.round(ease(t)*target).toLocaleString('tr-TR');if(t<1)requestAnimationFrame(f);})(start);}
+function applyReveal(el){el.classList.add('in');if(el.hasAttribute('data-count'))countUp(el);el.querySelectorAll('[data-count]').forEach(countUp);}
+function beatItems(slide,b){return Array.from(slide.querySelectorAll('[data-r]')).filter(e=>(+(e.dataset.step||0))===b);}
+function revealBeat(b,instant){beatItems(slides[cur],b).forEach((el,k)=>{if(instant)applyReveal(el);else timers.push(setTimeout(()=>applyReveal(el),el.dataset.d?+el.dataset.d:120+k*140));});onBeat(cur,b);}
+function resetSlide(s){s.querySelectorAll('[data-r]').forEach(e=>e.classList.remove('in'));s.querySelectorAll('[data-count]').forEach(e=>{e.dataset.done='0';e.textContent='0';});}
+function calcMax(s){let m=0;s.querySelectorAll('[data-step]').forEach(e=>m=Math.max(m,+e.dataset.step));return m;}
+function show(i,openAll){i=Math.max(0,Math.min(N-1,i));clearT();const old=slides[cur];old.classList.remove('active');resetSlide(old);cur=i;beat=0;const s=slides[cur];s.classList.add('active');s.scrollTop=0;maxBeat=calcMax(s);if(openAll){for(let b=0;b<=maxBeat;b++)revealBeat(b,true);beat=maxBeat;}else revealBeat(0,false);updateChrome();document.getElementById('hint').style.display=cur===0?'':'none';}
+function updateChrome(){segs.forEach((sg,k)=>{sg.classList.toggle('done',k<cur);sg.classList.toggle('cur',k===cur);});counter.textContent=(cur+1)+' / '+N;prevBtn.disabled=cur===0;nextBtn.disabled=cur===N-1&&beat===maxBeat;}
+function next(){if(beat<maxBeat){beat++;revealBeat(beat,false);updateChrome();}else if(cur<N-1)show(cur+1);}
+function prev(){if(cur>0)show(cur-1,true);}
+function onBeat(i,b){const s=slides[i];if(b!==0)return;
+  const demo=s.querySelector('#langdemo');if(demo&&!langT){let k=0;const L=demo.querySelectorAll('.langs b'),T=demo.querySelectorAll('.t span'),C=demo.querySelectorAll('.cta span');langT=setInterval(()=>{k=(k+1)%3;[L,T,C].forEach(g=>g.forEach((e,j)=>e.classList.toggle('on',j===k)));},2800);}
+  const fl=s.querySelector('#flow');if(fl)timers.push(setTimeout(()=>fl.classList.add('in'),300));}
+nextBtn.addEventListener('click',next);prevBtn.addEventListener('click',prev);document.getElementById('next2').addEventListener('click',next);document.getElementById('prev2').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(['Space','ArrowRight','ArrowDown','PageDown'].includes(e.code)){e.preventDefault();next();}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.code)){e.preventDefault();prev();}});
+let wheelLock=false;window.addEventListener('wheel',e=>{const s=slides[cur];if(s.scrollHeight>s.clientHeight+4){const atEnd=s.scrollTop+s.clientHeight>=s.scrollHeight-2,atTop=s.scrollTop<=0;if((e.deltaY>0&&!atEnd)||(e.deltaY<0&&!atTop))return;}e.preventDefault();if(wheelLock||Math.abs(e.deltaY)<12)return;wheelLock=true;setTimeout(()=>wheelLock=false,900);e.deltaY>0?next():prev();},{passive:false});
+let tx=0,ty=0;window.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+window.addEventListener('touchend',e=>{if(e.target.closest('button'))return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.3){dx<0?next():prev();}else if(Math.abs(dy)>70&&Math.abs(dy)>Math.abs(dx)*1.3){const s=slides[cur];const atEnd=s.scrollTop+s.clientHeight>=s.scrollHeight-2,atTop=s.scrollTop<=0;if(s.scrollHeight<=s.clientHeight+4||(dy<0&&atEnd)||(dy>0&&atTop)){dy<0?next():prev();}}});
+slides[0].classList.add('active');maxBeat=calcMax(slides[0]);revealBeat(0,false);updateChrome();
+}catch(err){document.querySelectorAll('.slide').forEach(s=>{s.style.position='relative';s.style.opacity=1;s.style.minHeight='100vh'});document.querySelectorAll('[data-r]').forEach(e=>e.classList.add('in'));document.body.style.overflow='auto';}})();
+</script></body></html>
